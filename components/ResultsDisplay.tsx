@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import type { Result } from '../types';
 import { LightBulbIcon, ClipboardIcon, CheckIcon, DownloadIcon } from './icons';
@@ -20,6 +19,13 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results }) => {
       alert('클립보드에 텍스트를 복사하지 못했습니다.');
     }
   };
+  
+  const getPromptText = (result: Result) => {
+    if (result.editStatus === 'done' && result.originalImageUrl) {
+        return result.editPrompt ? `AI 수정: ${result.editPrompt}` : '업로드한 원본 이미지';
+    }
+    return result.prompt;
+  };
 
   return (
     <section>
@@ -30,7 +36,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results }) => {
         각 단락과 이미지를 개별적으로 복사하고 다운로드하여 네이버 블로그 편집기에 쉽게 붙여넣을 수 있습니다.
       </p>
       <div className="space-y-12">
-        {results.map((result, index) => (
+        {results.filter(r => r.editStatus === 'done' && r.imageUrl).map((result, index) => (
           <div
             key={index}
             className={`relative flex flex-col md:flex-row gap-8 items-center bg-gray-800/50 p-6 rounded-xl shadow-lg border border-gray-700 overflow-hidden ${
@@ -57,7 +63,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results }) => {
                 <div className="flex items-start gap-3 bg-gray-900/50 p-3 rounded-md border border-gray-600 mb-4">
                     <LightBulbIcon className="w-5 h-5 text-yellow-300 mt-1 flex-shrink-0" />
                     <p className="text-sm text-gray-400 italic">
-                        <strong>프롬프트:</strong> {result.prompt}
+                        <strong>정보:</strong> {getPromptText(result)}
                     </p>
                 </div>
               <p className="text-gray-300 leading-relaxed text-lg mb-4 flex-grow">

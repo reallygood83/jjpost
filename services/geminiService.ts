@@ -1,4 +1,4 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI, Type, Modality } from "@google/genai";
 import type { NaverBlogItem } from "../types";
 
 if (!process.env.API_KEY) {
@@ -71,11 +71,12 @@ export const generateSeoTopics = async (mainKeyword: string, additionalKeywords:
 };
 
 /**
- * Generates a full blog post from a given title.
+ * Generates a full blog post from a given title, personalizing it with a blog/company name.
  * @param title The selected blog post title.
+ * @param blogName The user's blog or company name to naturally include in the post.
  * @returns A promise that resolves to the full blog post content as a string.
  */
-export const generateBlogPost = async (title: string): Promise<string> => {
+export const generateBlogPost = async (title: string, blogName: string): Promise<string> => {
     try {
         const prompt = `
         You are a helpful and engaging blog writer for Naver blogs.
@@ -83,6 +84,7 @@ export const generateBlogPost = async (title: string): Promise<string> => {
         The post should be well-structured with a clear introduction, a detailed body with multiple paragraphs, and a concluding summary.
         Use engaging language and formatting like bullet points or numbered lists where appropriate to make the post easy to read.
         The tone should be friendly and informative.
+        ${blogName ? `Throughout the article, naturally and appropriately mention the blog or company name "${blogName}" where it makes sense to do so.` : ''}
         `;
 
         const response = await ai.models.generateContent({
@@ -199,5 +201,71 @@ export const generateImage = async (prompt: string): Promise<string> => {
     } catch (error) {
         console.error("Error in generateImage:", error);
         throw new Error("Imagen API를 사용하여 이미지를 생성하는 데 실패했습니다.");
+    }
+};
+
+/**
+ * Edits an existing image based on a text prompt.
+ * @param base64ImageData The base64 encoded string of the source image.
+ * @param mimeType The MIME type of the source image (e.g., 'image/jpeg').
+ * @param prompt The text prompt describing the desired edits.
+ * @returns A promise that resolves to a base64 data URL of the edited image.
+ */
+export const editImage = async (base64ImageData: string, mimeType: string, prompt: string): Promise<string> => {
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash-image-preview',
+            contents: {
+                parts: [
+                    {
+                        inlineData: {
+                            data: base64ImageData,
+                            mimeType: mimeType,
+                        },
+                    },
+                    { text: prompt },
+                ],
+            },
+            config: {
+                responseModalities: [Modality.IMAGE, Modality.TEXT],
+            },
+        });
+        
+        for (const part of response.candidates[0].content.parts) {
+            if (part.inlineData) {
+                const base64ImageBytes: string = part.inlineData.data;
+                const imageMimeType = part.inlineData.mimeType;
+                return `data:${imageMimeType};base64,${base64ImageBytes}`;
+            }
+        }
+        throw new Error("AI가 수정된 이미지를 반환하지 않았습니다.");
+
+    } catch (error) {
+        console.error("Error in editImage:", error);
+        throw new Error("Gemini API를 사용하여 이미지를 수정하는 데 실패했습니다.");
+    }
+};
+
+/**
+ * Translates a given text to English.
+ * @param text The text to translate (expected to be in Korean).
+ * @returns A promise that resolves to the translated English text.
+ */
+export const translateToEnglish = async (text: string): Promise<string> => {
+    try {
+        const prompt = `Translate the following Korean text to English. Respond with only the translated text.
+        
+        Korean: "${text}"
+        English:`;
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: prompt,
+        });
+
+        return response.text.trim().replace(/"/g, ''); // Clean up quotes
+    } catch (error) {
+        console.error("Error in translateToEnglish:", error);
+        throw new Error("Gemini API를 사용하여 텍스트를 번역하는 데 실패했습니다.");
     }
 };

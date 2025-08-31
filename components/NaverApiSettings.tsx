@@ -61,9 +61,7 @@ const NaverApiSettings: React.FC<NaverApiSettingsProps> = ({ onSave, initialClie
                            API 키는 브라우저의 로컬 스토리지에 저장되며 외부로 전송되지 않습니다.
                         </p>
                          <p className="mt-2 font-semibold">
-                           참고: 이 앱은 CORS 문제를 해결하기 위해 공개 프록시(cors-anywhere)를 사용합니다. 처음 사용 시 프록시 서버에 방문하여 임시 접근 권한을 활성화해야 할 수 있습니다. 
-                           <a href="https://cors-anywhere.herokuapp.com/" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:underline">여기</a>
-                           를 클릭하여 프록시 사이트를 방문하고 "Request temporary access..." 버튼을 누르세요.
+                           참고: 이 앱은 브라우저의 CORS 정책을 우회하기 위해 공개 프록시 서버를 사용합니다. 이 방법은 개발 환경에서의 편의를 위한 것이며, 공개 프록시는 불안정하거나 예고 없이 변경될 수 있습니다. 실제 서비스에서는 자체 프록시 서버를 구축하는 것을 권장합니다.
                         </p>
                     </div>
                 </div>
