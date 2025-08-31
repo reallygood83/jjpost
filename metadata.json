@@ -1,0 +1,5 @@
+{
+  "name": "AI 블로그 포스트 어시스턴트",
+  "description": "An application that analyzes keywords, suggests SEO-optimized topics, generates a full blog post, and creates matching images, streamlining the entire content creation process for Naver blogs.",
+  "requestFramePermissions": []
+}
